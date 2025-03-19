@@ -11,6 +11,7 @@ const ConversionPanel = () => {
   const [angularCode, setAngularCode] = useState('');
   const [isConverting, setIsConverting] = useState(false);
   const [hasConverted, setHasConverted] = useState(false);
+  const [componentName, setComponentName] = useState('AppComponent');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -36,10 +37,26 @@ const ConversionPanel = () => {
     // Simulate processing time
     setTimeout(() => {
       try {
-        const result = transformReactToAngularComponent(reactCode);
+        // Try to auto-detect component name from code
+        const nameMatch = reactCode.match(/function\s+([A-Z][a-zA-Z0-9_]*)/);
+        const classMatch = reactCode.match(/class\s+([A-Z][a-zA-Z0-9_]*)/);
+        const exportMatch = reactCode.match(/export\s+default\s+([A-Z][a-zA-Z0-9_]*)/);
+        
+        const extractedName = nameMatch?.[1] || classMatch?.[1] || exportMatch?.[1] || componentName;
+        
+        if (extractedName !== componentName) {
+          setComponentName(extractedName);
+        }
+        
+        const result = transformReactToAngularComponent(reactCode, extractedName);
         setAngularCode(result);
         setHasConverted(true);
         setIsConverting(false);
+        
+        toast({
+          title: "Conversion Complete",
+          description: "React code has been converted to Angular.",
+        });
       } catch (error) {
         console.error('Conversion error:', error);
         toast({
@@ -64,14 +81,18 @@ const ConversionPanel = () => {
     const element = document.createElement('a');
     const file = new Blob([angularCode], { type: 'text/plain' });
     element.href = URL.createObjectURL(file);
-    element.download = 'angular-component.ts';
+    
+    // Use component name for the file name
+    const fileName = `${componentName.toLowerCase()}.component.ts`;
+    element.download = fileName;
+    
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
 
     toast({
       title: "Downloaded!",
-      description: "Angular component file has been downloaded.",
+      description: `Angular component file '${fileName}' has been downloaded.`,
     });
   };
 
@@ -79,6 +100,7 @@ const ConversionPanel = () => {
     setReactCode('');
     setAngularCode('');
     setHasConverted(false);
+    setComponentName('AppComponent');
   };
 
   return (
