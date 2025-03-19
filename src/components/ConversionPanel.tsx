@@ -11,6 +11,7 @@ const ConversionPanel = () => {
   const [reactCode, setReactCode] = useState('');
   const [angularCode, setAngularCode] = useState('');
   const [isConverting, setIsConverting] = useState(false);
+  const [conversionStatus, setConversionStatus] = useState('');
   const [hasConverted, setHasConverted] = useState(false);
   const [componentName, setComponentName] = useState('AppComponent');
   const [useAI, setUseAI] = useState(true);
@@ -47,6 +48,7 @@ const ConversionPanel = () => {
 
     setIsConverting(true);
     setError(null);
+    setConversionStatus('Preparing conversion...');
     
     try {
       // Try to auto-detect component name from code
@@ -65,9 +67,10 @@ const ConversionPanel = () => {
 
       if (useAI) {
         try {
-          console.log('Using AI conversion...');
+          setConversionStatus('Sending request to AI service...');
           // Use the OpenRouter API with DeepSeek model for conversion
           result = await convertReactToAngularUsingAI(reactCode, extractedName);
+          setConversionStatus('AI conversion complete');
           console.log('AI conversion successful');
           toast({
             title: "AI Conversion Complete",
@@ -75,6 +78,7 @@ const ConversionPanel = () => {
           });
         } catch (error) {
           console.error('AI conversion error:', error);
+          setConversionStatus('AI conversion failed, trying fallback...');
           toast({
             title: "AI Conversion Failed",
             description: "Falling back to built-in converter.",
@@ -85,6 +89,7 @@ const ConversionPanel = () => {
         }
       } else {
         // Use the built-in converter
+        setConversionStatus('Using built-in converter...');
         console.log('Using built-in converter...');
         result = fallbackConversion(reactCode, extractedName);
         toast({
@@ -101,15 +106,17 @@ const ConversionPanel = () => {
       }
     } catch (error) {
       console.error('Conversion error:', error);
-      setError(error instanceof Error ? error.message : 'Unknown conversion error');
-      setAngularCode('// Conversion failed. Please try again or use the built-in converter.');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown conversion error';
+      setError(errorMessage);
+      setAngularCode(`// Conversion failed: ${errorMessage}\n// Please try again or use the built-in converter.`);
       toast({
         title: "Conversion Error",
-        description: "Failed to convert the React code. Please check your input.",
+        description: "Failed to convert the React code. Please check your input or try the built-in converter.",
         variant: "destructive",
       });
     } finally {
       setIsConverting(false);
+      setConversionStatus('');
     }
   };
 
@@ -184,7 +191,7 @@ const ConversionPanel = () => {
             value={angularCode}
             language="typescript"
             readOnly
-            placeholder="Angular component will appear here..."
+            placeholder={isConverting ? conversionStatus || "Converting..." : "Angular component will appear here..."}
             label="Angular Component"
             className="h-full"
           />
@@ -238,6 +245,7 @@ const ConversionPanel = () => {
           onClick={handleConvert}
           className="flex items-center px-6"
           isLoading={isConverting}
+          disabled={isConverting}
         >
           {!isConverting && <ArrowRight size={16} className="ml-2" />}
           {isConverting ? "Converting..." : "Convert to Angular"}

@@ -67,7 +67,7 @@ Return ONLY the converted Angular code without explanations, with proper indenta
       })
     });
 
-    console.log('Received response from OpenRouter API');
+    console.log('Received response from OpenRouter API:', response.status);
     
     if (!response.ok) {
       const errorData = await response.text();
@@ -76,21 +76,21 @@ Return ONLY the converted Angular code without explanations, with proper indenta
     }
 
     const data: ApiResponse = await response.json();
-    console.log('API Response data:', data);
+    console.log('API Response data received:', !!data);
 
     if (data.error) {
       console.error('API returned error:', data.error);
       throw new Error(data.error.message);
     }
 
-    if (!data.choices || data.choices.length === 0) {
-      console.error('No choices in response:', data);
-      throw new Error('No response from API');
+    if (!data.choices || data.choices.length === 0 || !data.choices[0].message) {
+      console.error('Invalid response format:', data);
+      throw new Error('Invalid response format from API');
     }
 
     // Extract the converted code from the response
     const convertedCode = data.choices[0].message.content.trim();
-    console.log('Converted code:', convertedCode.substring(0, 100) + '...');
+    console.log('Converted code received, length:', convertedCode.length);
 
     // Remove any markdown code blocks if present
     return convertedCode.replace(/```(typescript|angular|ts|html)?\n([\s\S]*?)```/g, '$2').trim();
@@ -102,7 +102,12 @@ Return ONLY the converted Angular code without explanations, with proper indenta
 
 // Fallback function that uses our existing transformer in case the API fails
 export const fallbackConversion = (reactCode: string, componentName: string): string => {
-  // Import the existing transformer
-  const { transformReactToAngularComponent } = require('../utils/codeTransformer');
-  return transformReactToAngularComponent(reactCode, componentName);
+  try {
+    // Import the existing transformer
+    const { transformReactToAngularComponent } = require('../utils/codeTransformer');
+    return transformReactToAngularComponent(reactCode, componentName);
+  } catch (error) {
+    console.error('Error in fallback conversion:', error);
+    throw new Error(`Fallback conversion failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
 };
