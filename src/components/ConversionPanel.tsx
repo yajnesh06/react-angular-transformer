@@ -14,15 +14,26 @@ const ConversionPanel = () => {
   const [hasConverted, setHasConverted] = useState(false);
   const [componentName, setComponentName] = useState('AppComponent');
   const [useAI, setUseAI] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     // Load sample code on initial render
-    const { react, angular } = getSampleConversion();
-    setReactCode(react);
-    setAngularCode(angular);
-    setHasConverted(true);
-  }, []);
+    try {
+      const { react, angular } = getSampleConversion();
+      setReactCode(react);
+      setAngularCode(angular);
+      setHasConverted(true);
+    } catch (err) {
+      console.error('Error loading sample conversion:', err);
+      setError('Failed to load sample code. Please try again.');
+      toast({
+        title: "Error Loading Samples",
+        description: "Could not load sample code. Please refresh the page.",
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
 
   const handleConvert = async () => {
     if (!reactCode.trim()) {
@@ -35,6 +46,7 @@ const ConversionPanel = () => {
     }
 
     setIsConverting(true);
+    setError(null);
     
     try {
       // Try to auto-detect component name from code
@@ -53,8 +65,10 @@ const ConversionPanel = () => {
 
       if (useAI) {
         try {
-          // Use the DeepSeek API for conversion
+          console.log('Using AI conversion...');
+          // Use the OpenRouter API with DeepSeek model for conversion
           result = await convertReactToAngularUsingAI(reactCode, extractedName);
+          console.log('AI conversion successful');
           toast({
             title: "AI Conversion Complete",
             description: "React code has been converted to Angular using DeepSeek AI.",
@@ -71,6 +85,7 @@ const ConversionPanel = () => {
         }
       } else {
         // Use the built-in converter
+        console.log('Using built-in converter...');
         result = fallbackConversion(reactCode, extractedName);
         toast({
           title: "Conversion Complete",
@@ -78,10 +93,16 @@ const ConversionPanel = () => {
         });
       }
       
-      setAngularCode(result);
-      setHasConverted(true);
+      if (result) {
+        setAngularCode(result);
+        setHasConverted(true);
+      } else {
+        throw new Error('Conversion returned empty result');
+      }
     } catch (error) {
       console.error('Conversion error:', error);
+      setError(error instanceof Error ? error.message : 'Unknown conversion error');
+      setAngularCode('// Conversion failed. Please try again or use the built-in converter.');
       toast({
         title: "Conversion Error",
         description: "Failed to convert the React code. Please check your input.",
@@ -124,6 +145,7 @@ const ConversionPanel = () => {
     setAngularCode('');
     setHasConverted(false);
     setComponentName('AppComponent');
+    setError(null);
   };
 
   const toggleConversionMode = () => {
@@ -138,6 +160,13 @@ const ConversionPanel = () => {
 
   return (
     <div className="w-full">
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600">
+          <p className="font-medium">Error:</p>
+          <p>{error}</p>
+        </div>
+      )}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="animate-slide-in-left [animation-delay:200ms]">
           <CodeEditor
