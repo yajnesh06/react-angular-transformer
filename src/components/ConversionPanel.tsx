@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react';
 import CodeEditor from './CodeEditor';
 import Button from './Button';
 import { ArrowRight, Download, Copy, RefreshCw } from 'lucide-react';
-import { transformReactToAngularComponent, getSampleConversion } from '@/utils/codeTransformer';
+import { getSampleConversion } from '@/utils/codeTransformer';
+import { convertReactToAngularUsingAI, fallbackConversion } from '@/services/deepseekAPI';
 import { useToast } from '@/hooks/use-toast';
 
 const ConversionPanel = () => {
@@ -12,6 +13,7 @@ const ConversionPanel = () => {
   const [isConverting, setIsConverting] = useState(false);
   const [hasConverted, setHasConverted] = useState(false);
   const [componentName, setComponentName] = useState('AppComponent');
+  const [useAI, setUseAI] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -22,7 +24,7 @@ const ConversionPanel = () => {
     setHasConverted(true);
   }, []);
 
-  const handleConvert = () => {
+  const handleConvert = async () => {
     if (!reactCode.trim()) {
       toast({
         title: "Empty Code",
@@ -34,39 +36,60 @@ const ConversionPanel = () => {
 
     setIsConverting(true);
     
-    // Simulate processing time
-    setTimeout(() => {
-      try {
-        // Try to auto-detect component name from code
-        const nameMatch = reactCode.match(/function\s+([A-Z][a-zA-Z0-9_]*)/);
-        const classMatch = reactCode.match(/class\s+([A-Z][a-zA-Z0-9_]*)/);
-        const exportMatch = reactCode.match(/export\s+default\s+([A-Z][a-zA-Z0-9_]*)/);
-        
-        const extractedName = nameMatch?.[1] || classMatch?.[1] || exportMatch?.[1] || componentName;
-        
-        if (extractedName !== componentName) {
-          setComponentName(extractedName);
+    try {
+      // Try to auto-detect component name from code
+      const nameMatch = reactCode.match(/function\s+([A-Z][a-zA-Z0-9_]*)/);
+      const classMatch = reactCode.match(/class\s+([A-Z][a-zA-Z0-9_]*)/);
+      const constMatch = reactCode.match(/const\s+([A-Z][a-zA-Z0-9_]*)\s*=/);
+      const exportMatch = reactCode.match(/export\s+default\s+([A-Z][a-zA-Z0-9_]*)/);
+      
+      const extractedName = nameMatch?.[1] || classMatch?.[1] || constMatch?.[1] || exportMatch?.[1] || componentName;
+      
+      if (extractedName !== componentName) {
+        setComponentName(extractedName);
+      }
+      
+      let result;
+
+      if (useAI) {
+        try {
+          // Use the DeepSeek API for conversion
+          result = await convertReactToAngularUsingAI(reactCode, extractedName);
+          toast({
+            title: "AI Conversion Complete",
+            description: "React code has been converted to Angular using DeepSeek AI.",
+          });
+        } catch (error) {
+          console.error('AI conversion error:', error);
+          toast({
+            title: "AI Conversion Failed",
+            description: "Falling back to built-in converter.",
+            variant: "destructive",
+          });
+          // Fall back to the built-in converter
+          result = fallbackConversion(reactCode, extractedName);
         }
-        
-        const result = transformReactToAngularComponent(reactCode, extractedName);
-        setAngularCode(result);
-        setHasConverted(true);
-        setIsConverting(false);
-        
+      } else {
+        // Use the built-in converter
+        result = fallbackConversion(reactCode, extractedName);
         toast({
           title: "Conversion Complete",
-          description: "React code has been converted to Angular.",
+          description: "React code has been converted to Angular using built-in converter.",
         });
-      } catch (error) {
-        console.error('Conversion error:', error);
-        toast({
-          title: "Conversion Error",
-          description: "Failed to convert the React code. Please check your input.",
-          variant: "destructive",
-        });
-        setIsConverting(false);
       }
-    }, 800);
+      
+      setAngularCode(result);
+      setHasConverted(true);
+    } catch (error) {
+      console.error('Conversion error:', error);
+      toast({
+        title: "Conversion Error",
+        description: "Failed to convert the React code. Please check your input.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsConverting(false);
+    }
   };
 
   const handleCopyToClipboard = () => {
@@ -101,6 +124,16 @@ const ConversionPanel = () => {
     setAngularCode('');
     setHasConverted(false);
     setComponentName('AppComponent');
+  };
+
+  const toggleConversionMode = () => {
+    setUseAI(!useAI);
+    toast({
+      title: useAI ? "Using Built-in Converter" : "Using AI Converter",
+      description: useAI 
+        ? "Switched to built-in conversion algorithm." 
+        : "Switched to DeepSeek AI conversion for better accuracy.",
+    });
   };
 
   return (
@@ -139,6 +172,14 @@ const ConversionPanel = () => {
           >
             <RefreshCw size={16} className="mr-2" />
             Clear
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleConversionMode}
+            className={`flex items-center ${useAI ? 'bg-blue-50' : ''}`}
+          >
+            {useAI ? 'Using AI (DeepSeek)' : 'Using Built-in Converter'}
           </Button>
           {hasConverted && (
             <>
