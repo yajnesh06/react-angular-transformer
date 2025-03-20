@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import CodeEditor from './CodeEditor';
 import Button from './Button';
@@ -61,22 +60,7 @@ export default Counter;`;
     setIsConverting(true);
     setError(null);
     setAngularCode(''); // Clear previous conversion
-    setConversionStatus('Initializing conversion...');
-    
-    // Add visible UI feedback for better UX
-    const statusUpdateInterval = setInterval(() => {
-      setConversionStatus(prev => {
-        const statusMessages = [
-          'Parsing React code...',
-          'Analyzing component structure...',
-          'Converting to Angular...',
-          'Optimizing output...',
-          'Almost there...'
-        ];
-        const currentIndex = statusMessages.indexOf(prev);
-        return statusMessages[(currentIndex + 1) % statusMessages.length];
-      });
-    }, 800);
+    setConversionStatus('Converting your React component...');
     
     try {
       // Detect component name from code
@@ -109,7 +93,6 @@ export default Counter;`;
         variant: "destructive",
       });
     } finally {
-      clearInterval(statusUpdateInterval);
       setIsConverting(false);
       setConversionStatus('');
     }
