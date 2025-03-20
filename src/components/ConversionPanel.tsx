@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import CodeEditor from './CodeEditor';
 import Button from './Button';
-import { ArrowRight, Download, Copy, RefreshCw } from 'lucide-react';
+import { ArrowRight, Download, Copy, RefreshCw, Code, FileCode } from 'lucide-react';
 import { convertReactToAngularUsingAI } from '@/services/deepseekAPI';
 import { useToast } from '@/hooks/use-toast';
 
@@ -60,7 +61,24 @@ export default Counter;`;
     setIsConverting(true);
     setError(null);
     setAngularCode(''); // Clear previous conversion
-    setConversionStatus('Converting your React component...');
+    
+    // Set a series of status messages to make the process feel more responsive
+    const statusMessages = [
+      "Analyzing React component structure...",
+      "Identifying component lifecycle hooks...",
+      "Converting JSX to Angular template...",
+      "Adapting state management...",
+      "Finalizing Angular component..."
+    ];
+    
+    // Display changing status messages while converting
+    let messageIndex = 0;
+    const statusInterval = setInterval(() => {
+      if (messageIndex < statusMessages.length) {
+        setConversionStatus(statusMessages[messageIndex]);
+        messageIndex++;
+      }
+    }, 1000);
     
     try {
       // Detect component name from code
@@ -77,7 +95,7 @@ export default Counter;`;
         setHasConverted(true);
         toast({
           title: "Conversion Complete",
-          description: "React code has been converted to Angular successfully.",
+          description: `Successfully converted "${extractedName}" to Angular.`,
         });
       } else {
         throw new Error('Received empty response from conversion service');
@@ -93,6 +111,7 @@ export default Counter;`;
         variant: "destructive",
       });
     } finally {
+      clearInterval(statusInterval);
       setIsConverting(false);
       setConversionStatus('');
     }
@@ -144,6 +163,12 @@ export default Counter;`;
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="animate-slide-in-left [animation-delay:200ms]">
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-gray-700 flex items-center">
+              <Code size={16} className="mr-1" /> React Component
+            </h3>
+            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">JSX</span>
+          </div>
           <CodeEditor
             value={reactCode}
             onChange={setReactCode}
@@ -155,6 +180,12 @@ export default Counter;`;
         </div>
 
         <div className="flex flex-col animate-slide-in-right [animation-delay:300ms]">
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-gray-700 flex items-center">
+              <FileCode size={16} className="mr-1" /> Angular Component
+            </h3>
+            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">TypeScript</span>
+          </div>
           <CodeEditor
             value={angularCode}
             language="typescript"

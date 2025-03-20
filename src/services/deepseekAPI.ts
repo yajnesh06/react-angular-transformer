@@ -1,8 +1,4 @@
 
-/**
- * OpenRouter API service for React to Angular code conversion
- */
-
 import axios from 'axios';
 
 const API_KEY = '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';
@@ -25,7 +21,7 @@ export const convertReactToAngularUsingAI = async (
         messages: [
           {
             role: 'system',
-            content: 'You are an expert in both React and Angular. Convert React code to equivalent Angular code while maintaining functionality and best practices.'
+            content: 'You are an expert in both React and Angular. Convert React code to equivalent Angular code while maintaining functionality and best practices. Return ONLY the raw Angular code without any code block markers, markdown formatting, or explanations.'
           },
           {
             role: 'user',
@@ -57,8 +53,11 @@ export const convertReactToAngularUsingAI = async (
       throw new Error('No content in API response');
     }
 
+    // Remove markdown code block markers if present
+    const cleanedContent = content.replace(/```(typescript|angular|javascript)?|```/g, '').trim();
+    
     console.log('Conversion completed successfully');
-    return content;
+    return cleanedContent;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (error.code === 'ECONNABORTED') {
