@@ -1,26 +1,56 @@
-# Welcome to your Lovable project
+
+# React to Angular Converter
+
+A powerful web application that leverages AI to convert React components to Angular components with precision and elegance.
 
 ## Project info
 
 **URL**: https://lovable.dev/projects/ebf4bf7a-27d4-429f-84aa-2f7a1760414c
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- **JSX to Angular Templates**: Convert JSX syntax to Angular templates with proper binding and directives
+- **State & Props Conversion**: Transform React state and props to Angular @Input(), and component properties
+- **Intelligent Conversion**: AI-powered translation that understands the patterns of both frameworks
+- **Copy & Download**: Easily copy or download your converted Angular components
+- **Error Handling**: Clear error messages and suggestions if conversion fails
 
-**Use Lovable**
+## How It Works
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/ebf4bf7a-27d4-429f-84aa-2f7a1760414c) and start prompting.
+1. Paste your React component code into the editor
+2. Click "Convert to Angular"
+3. Get the equivalent Angular component with proper imports, decorators, and structure
+4. Copy or download the result
 
-Changes made via Lovable will be committed automatically to this repo.
+The conversion is powered by OpenRouter API using GPT-3.5-turbo model, which has been trained to understand both React and Angular patterns and best practices.
 
-**Use your preferred IDE**
+## Technologies Used
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
+- OpenRouter API with GPT-3.5-turbo
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Documentation
 
-Follow these steps:
+For detailed information about the application architecture, file structure, and conversion process, please see the [DOCUMENTATION.md](./DOCUMENTATION.md) file.
+
+## How to use this application
+
+### Use the web interface
+
+The simplest way to use the converter is through our web interface:
+
+1. Visit the application at [React to Angular Converter](https://lovable.dev/projects/ebf4bf7a-27d4-429f-84aa-2f7a1760414c)
+2. Paste your React component code
+3. Click "Convert to Angular"
+4. Copy or download the resulting Angular component
+
+### Run locally
+
+If you want to work locally using your own IDE, you can clone this repo and run it:
 
 ```sh
 # Step 1: Clone the repository using the project's Git URL.
@@ -36,6 +66,20 @@ npm i
 npm run dev
 ```
 
+## How to edit this code?
+
+There are several ways of editing this application:
+
+**Use Lovable**
+
+Simply visit the [Lovable Project](https://lovable.dev/projects/ebf4bf7a-27d4-429f-84aa-2f7a1760414c) and start prompting.
+
+Changes made via Lovable will be committed automatically to this repo.
+
+**Use your preferred IDE**
+
+If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+
 **Edit a file directly in GitHub**
 
 - Navigate to the desired file(s).
@@ -50,16 +94,6 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/ebf4bf7a-27d4-429f-84aa-2f7a1760414c) and click on Share -> Publish.
@@ -67,3 +101,7 @@ Simply open [Lovable](https://lovable.dev/projects/ebf4bf7a-27d4-429f-84aa-2f7a1
 ## I want to use a custom domain - is that possible?
 
 We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
