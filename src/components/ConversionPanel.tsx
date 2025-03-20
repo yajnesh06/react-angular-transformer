@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import CodeEditor from './CodeEditor';
 import Button from './Button';
 import { ArrowRight, Download, Copy, RefreshCw } from 'lucide-react';
-import { getSampleConversion } from '@/utils/codeTransformer';
 import { convertReactToAngularUsingAI } from '@/services/deepseekAPI';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,23 +16,37 @@ const ConversionPanel = () => {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // Simple sample React component for first load
   useEffect(() => {
-    // Load sample code on initial render
-    try {
-      const { react, angular } = getSampleConversion();
-      setReactCode(react);
-      setAngularCode(angular);
-      setHasConverted(true);
-    } catch (err) {
-      console.error('Error loading sample conversion:', err);
-      setError('Failed to load sample code. Please try again.');
-      toast({
-        title: "Error Loading Samples",
-        description: "Could not load sample code. Please refresh the page.",
-        variant: "destructive",
-      });
-    }
-  }, [toast]);
+    const sampleReact = `
+import { useState } from 'react';
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div className="counter">
+      <h2>Count: {count}</h2>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+      <button onClick={() => setCount(count - 1)}>Decrement</button>
+    </div>
+  );
+}
+
+export default Counter;`;
+
+    setReactCode(sampleReact);
+  }, []);
+
+  const detectComponentName = (code: string): string => {
+    // Auto-detect component name from code
+    const nameMatch = code.match(/function\s+([A-Z][a-zA-Z0-9_]*)/);
+    const classMatch = code.match(/class\s+([A-Z][a-zA-Z0-9_]*)/);
+    const constMatch = code.match(/const\s+([A-Z][a-zA-Z0-9_]*)\s*=/);
+    const exportMatch = code.match(/export\s+default\s+([A-Z][a-zA-Z0-9_]*)/);
+    
+    return nameMatch?.[1] || classMatch?.[1] || constMatch?.[1] || exportMatch?.[1] || 'AppComponent';
+  };
 
   const handleConvert = async () => {
     if (!reactCode.trim()) {
@@ -47,43 +60,37 @@ const ConversionPanel = () => {
 
     setIsConverting(true);
     setError(null);
-    setConversionStatus('Processing your React code...');
+    setAngularCode(''); // Clear previous conversion
+    setConversionStatus('Processing...');
     
     try {
-      // Try to auto-detect component name from code
-      const nameMatch = reactCode.match(/function\s+([A-Z][a-zA-Z0-9_]*)/);
-      const classMatch = reactCode.match(/class\s+([A-Z][a-zA-Z0-9_]*)/);
-      const constMatch = reactCode.match(/const\s+([A-Z][a-zA-Z0-9_]*)\s*=/);
-      const exportMatch = reactCode.match(/export\s+default\s+([A-Z][a-zA-Z0-9_]*)/);
-      
-      const extractedName = nameMatch?.[1] || classMatch?.[1] || constMatch?.[1] || exportMatch?.[1] || componentName;
-      
+      // Detect component name from code
+      const extractedName = detectComponentName(reactCode);
       if (extractedName !== componentName) {
         setComponentName(extractedName);
       }
       
-      setConversionStatus('Sending to DeepSeek AI...');
+      // Start the conversion with the optimized API
       const result = await convertReactToAngularUsingAI(reactCode, extractedName);
       
       if (result) {
         setAngularCode(result);
         setHasConverted(true);
-        setConversionStatus('');
         toast({
           title: "Conversion Complete",
           description: "React code has been converted to Angular successfully.",
         });
       } else {
-        throw new Error('AI returned empty response');
+        throw new Error('Received empty response from conversion service');
       }
     } catch (error) {
       console.error('Conversion error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown conversion error';
       setError(errorMessage);
-      setAngularCode(`// Conversion failed: ${errorMessage}\n// Please try again with a different component.`);
+      setAngularCode('// Conversion failed. Please try again with a simpler component.');
       toast({
         title: "Conversion Error",
-        description: "Failed to convert the React code. Please check your input and try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -153,10 +160,17 @@ const ConversionPanel = () => {
             value={angularCode}
             language="typescript"
             readOnly
-            placeholder={isConverting ? conversionStatus || "Converting..." : "Angular component will appear here..."}
+            placeholder={isConverting ? "Converting..." : "Angular component will appear here..."}
             label="Angular Component"
             className="h-full"
           />
+          
+          {isConverting && (
+            <div className="mt-2 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-apple-blue mr-2"></div>
+              <span className="text-sm text-gray-600">Converting your component...</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -202,7 +216,7 @@ const ConversionPanel = () => {
           disabled={isConverting}
         >
           {!isConverting && <ArrowRight size={16} className="ml-2" />}
-          {isConverting ? conversionStatus || "Converting..." : "Convert to Angular"}
+          {isConverting ? "Converting..." : "Convert to Angular"}
         </Button>
       </div>
     </div>
