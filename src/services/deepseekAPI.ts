@@ -28,19 +28,19 @@ export const convertReactToAngularUsingAI = async (
   try {
     console.log('Starting optimized AI conversion...');
     
-    // Create a more focused prompt for faster processing
+    // Create a highly optimized prompt for faster processing and better results
     const prompt = `
-Convert this React component to Angular:
-Component name: ${componentName}
-React code:
+Convert this React component to Angular immediately.
+Component: ${componentName}
+Code:
 \`\`\`jsx
 ${reactCode}
 \`\`\`
-Return ONLY the converted Angular code without explanations.`;
+Respond with ONLY the complete Angular component code (both TS and HTML). No explanations.`;
 
     // Use AbortController to set timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 25000); // 25 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout (reduced from 25s)
     
     const response = await fetch(OPENROUTER_API_URL, {
       method: 'POST',
@@ -53,9 +53,9 @@ Return ONLY the converted Angular code without explanations.`;
       body: JSON.stringify({
         model: 'deepseek/deepseek-r1:free',
         messages: [{role: 'user', content: prompt}],
-        temperature: 0.1, // Lower temperature for more consistent and faster responses
-        max_tokens: 2000, // Reduced from 4000 to speed up response
-        stream: false,    // No streaming for faster first-response
+        temperature: 0.05, // Lowered temperature for more consistent responses
+        max_tokens: 1500, // Reduced to speed up response
+        stream: false
       }),
       signal: controller.signal
     });
@@ -81,10 +81,13 @@ Return ONLY the converted Angular code without explanations.`;
     const convertedCode = data.choices[0].message.content.trim();
     
     // Clean up the code - remove markdown formatting if present
-    return convertedCode.replace(/```(typescript|angular|ts|html)?\n([\s\S]*?)```/g, '$2').trim();
+    const cleanedCode = convertedCode.replace(/```(typescript|angular|ts|html)?\n([\s\S]*?)```/g, '$2').trim();
+    
+    console.log('Conversion completed successfully');
+    return cleanedCode;
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
-      throw new Error('Conversion timed out. Please try a smaller component or try again later.');
+      throw new Error('Conversion timed out. Please try a smaller component.');
     }
     console.error('Conversion error:', error);
     throw error;

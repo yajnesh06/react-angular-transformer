@@ -61,7 +61,22 @@ export default Counter;`;
     setIsConverting(true);
     setError(null);
     setAngularCode(''); // Clear previous conversion
-    setConversionStatus('Processing...');
+    setConversionStatus('Initializing conversion...');
+    
+    // Add visible UI feedback for better UX
+    const statusUpdateInterval = setInterval(() => {
+      setConversionStatus(prev => {
+        const statusMessages = [
+          'Parsing React code...',
+          'Analyzing component structure...',
+          'Converting to Angular...',
+          'Optimizing output...',
+          'Almost there...'
+        ];
+        const currentIndex = statusMessages.indexOf(prev);
+        return statusMessages[(currentIndex + 1) % statusMessages.length];
+      });
+    }, 800);
     
     try {
       // Detect component name from code
@@ -70,7 +85,7 @@ export default Counter;`;
         setComponentName(extractedName);
       }
       
-      // Start the conversion with the optimized API
+      // Convert code with optimized service
       const result = await convertReactToAngularUsingAI(reactCode, extractedName);
       
       if (result) {
@@ -94,6 +109,7 @@ export default Counter;`;
         variant: "destructive",
       });
     } finally {
+      clearInterval(statusUpdateInterval);
       setIsConverting(false);
       setConversionStatus('');
     }
@@ -168,7 +184,7 @@ export default Counter;`;
           {isConverting && (
             <div className="mt-2 flex items-center justify-center">
               <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-apple-blue mr-2"></div>
-              <span className="text-sm text-gray-600">Converting your component...</span>
+              <span className="text-sm text-gray-600">{conversionStatus || 'Converting your component...'}</span>
             </div>
           )}
         </div>
