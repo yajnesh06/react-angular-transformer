@@ -25,6 +25,8 @@ export const convertReactToAngularUsingAI = async (
   componentName: string
 ): Promise<string> => {
   try {
+    console.log('Starting AI conversion process...');
+    
     const prompt = `
 Convert the following React component code to an Angular component.
 Please follow these guidelines:
@@ -97,17 +99,5 @@ Return ONLY the converted Angular code without explanations, with proper indenta
   } catch (error) {
     console.error('Error calling OpenRouter API:', error);
     throw error;
-  }
-};
-
-// Fallback function that uses our existing transformer in case the API fails
-export const fallbackConversion = (reactCode: string, componentName: string): string => {
-  try {
-    // Import the existing transformer
-    const { transformReactToAngularComponent } = require('../utils/codeTransformer');
-    return transformReactToAngularComponent(reactCode, componentName);
-  } catch (error) {
-    console.error('Error in fallback conversion:', error);
-    throw new Error(`Fallback conversion failed: ${error instanceof Error ? error.message : String(error)}`);
   }
 };

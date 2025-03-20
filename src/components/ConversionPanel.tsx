@@ -4,7 +4,7 @@ import CodeEditor from './CodeEditor';
 import Button from './Button';
 import { ArrowRight, Download, Copy, RefreshCw } from 'lucide-react';
 import { getSampleConversion } from '@/utils/codeTransformer';
-import { convertReactToAngularUsingAI, fallbackConversion } from '@/services/deepseekAPI';
+import { convertReactToAngularUsingAI } from '@/services/deepseekAPI';
 import { useToast } from '@/hooks/use-toast';
 
 const ConversionPanel = () => {
@@ -14,7 +14,6 @@ const ConversionPanel = () => {
   const [conversionStatus, setConversionStatus] = useState('');
   const [hasConverted, setHasConverted] = useState(false);
   const [componentName, setComponentName] = useState('AppComponent');
-  const [useAI, setUseAI] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -48,7 +47,7 @@ const ConversionPanel = () => {
 
     setIsConverting(true);
     setError(null);
-    setConversionStatus('Preparing conversion...');
+    setConversionStatus('Processing your React code...');
     
     try {
       // Try to auto-detect component name from code
@@ -63,55 +62,28 @@ const ConversionPanel = () => {
         setComponentName(extractedName);
       }
       
-      let result;
-
-      if (useAI) {
-        try {
-          setConversionStatus('Sending request to AI service...');
-          // Use the OpenRouter API with DeepSeek model for conversion
-          result = await convertReactToAngularUsingAI(reactCode, extractedName);
-          setConversionStatus('AI conversion complete');
-          console.log('AI conversion successful');
-          toast({
-            title: "AI Conversion Complete",
-            description: "React code has been converted to Angular using DeepSeek AI.",
-          });
-        } catch (error) {
-          console.error('AI conversion error:', error);
-          setConversionStatus('AI conversion failed, trying fallback...');
-          toast({
-            title: "AI Conversion Failed",
-            description: "Falling back to built-in converter.",
-            variant: "destructive",
-          });
-          // Fall back to the built-in converter
-          result = fallbackConversion(reactCode, extractedName);
-        }
-      } else {
-        // Use the built-in converter
-        setConversionStatus('Using built-in converter...');
-        console.log('Using built-in converter...');
-        result = fallbackConversion(reactCode, extractedName);
-        toast({
-          title: "Conversion Complete",
-          description: "React code has been converted to Angular using built-in converter.",
-        });
-      }
+      setConversionStatus('Sending to DeepSeek AI...');
+      const result = await convertReactToAngularUsingAI(reactCode, extractedName);
       
       if (result) {
         setAngularCode(result);
         setHasConverted(true);
+        setConversionStatus('');
+        toast({
+          title: "Conversion Complete",
+          description: "React code has been converted to Angular successfully.",
+        });
       } else {
-        throw new Error('Conversion returned empty result');
+        throw new Error('AI returned empty response');
       }
     } catch (error) {
       console.error('Conversion error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown conversion error';
       setError(errorMessage);
-      setAngularCode(`// Conversion failed: ${errorMessage}\n// Please try again or use the built-in converter.`);
+      setAngularCode(`// Conversion failed: ${errorMessage}\n// Please try again with a different component.`);
       toast({
         title: "Conversion Error",
-        description: "Failed to convert the React code. Please check your input or try the built-in converter.",
+        description: "Failed to convert the React code. Please check your input and try again.",
         variant: "destructive",
       });
     } finally {
@@ -153,16 +125,6 @@ const ConversionPanel = () => {
     setHasConverted(false);
     setComponentName('AppComponent');
     setError(null);
-  };
-
-  const toggleConversionMode = () => {
-    setUseAI(!useAI);
-    toast({
-      title: useAI ? "Using Built-in Converter" : "Using AI Converter",
-      description: useAI 
-        ? "Switched to built-in conversion algorithm." 
-        : "Switched to DeepSeek AI conversion for better accuracy.",
-    });
   };
 
   return (
@@ -209,14 +171,6 @@ const ConversionPanel = () => {
             <RefreshCw size={16} className="mr-2" />
             Clear
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={toggleConversionMode}
-            className={`flex items-center ${useAI ? 'bg-blue-50' : ''}`}
-          >
-            {useAI ? 'Using AI (DeepSeek)' : 'Using Built-in Converter'}
-          </Button>
           {hasConverted && (
             <>
               <Button
@@ -248,7 +202,7 @@ const ConversionPanel = () => {
           disabled={isConverting}
         >
           {!isConverting && <ArrowRight size={16} className="ml-2" />}
-          {isConverting ? "Converting..." : "Convert to Angular"}
+          {isConverting ? conversionStatus || "Converting..." : "Convert to Angular"}
         </Button>
       </div>
     </div>
