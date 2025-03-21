@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import CodeEditor from './CodeEditor';
 import Button from './Button';
@@ -118,7 +117,6 @@ export default Counter;`;
         toast({
           title: "Conversion Complete",
           description: `Successfully converted "${extractedName}" to Angular.`,
-          icon: <CheckCircle className="h-4 w-4 text-green-500" />,
         });
       } else {
         throw new Error('Received empty response from conversion service');
@@ -132,7 +130,6 @@ export default Counter;`;
         title: "Conversion Error",
         description: errorMessage,
         variant: "destructive",
-        icon: <AlertCircle className="h-4 w-4" />,
       });
       
       // Animate error appearance
@@ -152,7 +149,6 @@ export default Counter;`;
     toast({
       title: "Copied!",
       description: "Angular code copied to clipboard.",
-      icon: <CheckCircle className="h-4 w-4 text-green-500" />,
     });
     
     // Add a brief animation to the copy button
@@ -178,7 +174,6 @@ export default Counter;`;
     toast({
       title: "Downloaded!",
       description: `Angular component file '${fileName}' has been downloaded.`,
-      icon: <CheckCircle className="h-4 w-4 text-green-500" />,
     });
     
     // Add a brief animation to the download button
