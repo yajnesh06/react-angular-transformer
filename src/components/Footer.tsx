@@ -8,7 +8,7 @@ const Footer = () => {
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <div className="h-8 w-8 rounded-lg bg-apple-blue flex items-center justify-center">
+              <div className="h-10 w-12 rounded-lg bg-apple-blue flex items-center justify-center">
                 <span className="text-white font-semibold text-sm">R→A</span>
               </div>
               <span className="font-medium text-lg tracking-tight">React to Angular</span>

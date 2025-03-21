@@ -27,8 +27,8 @@ const Header = () => {
     >
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <Link to="/" className="flex items-center space-x-2">
-          <div className="h-8 w-8 rounded-lg bg-apple-blue flex items-center justify-center">
-            <span className="text-white font-semibold text-sm">R→A</span>
+          <div className="h-10 w-12  px-2 py-2 rounded-lg bg-apple-blue flex items-center justify-center">
+            <span className="text-white font-semibold px-2 py-2 text-sm">R→A</span>
           </div>
           <span className="font-medium text-lg tracking-tight">React to Angular</span>
         </Link>

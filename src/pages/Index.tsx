@@ -89,9 +89,7 @@ const Index = () => {
               A powerful tool for migrating codebases or learning framework differences.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 hero-buttons">
-              <Button size="lg">
-                Get Started with CLI
-              </Button>
+            
               <a 
                 href="#converter" 
                 className="text-gray-600 flex items-center hover:text-apple-blue transition-colors"
