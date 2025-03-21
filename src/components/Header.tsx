@@ -35,9 +35,11 @@ const Header = () => {
         
         <div className="flex items-center space-x-6">
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-sm font-medium text-gray-700 hover:text-apple-blue transition-colors">
+            <a
+            href="#converter" 
+            className="text-sm font-medium text-gray-700 hover:text-apple-blue transition-colors">
               Converter
-            </Link>
+            </a>
             <a 
               href="#features" 
               className="text-sm font-medium text-gray-700 hover:text-apple-blue transition-colors"
