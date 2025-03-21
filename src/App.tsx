@@ -13,16 +13,21 @@ const queryClient = new QueryClient();
 
 const App = () => {
   useEffect(() => {
+    console.log("App mounted, initializing smooth scroll and animations");
+    
     // Initialize smooth scrolling
     const lenis = initSmoothScroll();
     
-    // Initialize GSAP animations after a short delay
+    // Initialize GSAP animations after the component has mounted
+    // Allow a brief moment for the DOM to be fully ready
     setTimeout(() => {
+      console.log("Calling initAnimations");
       initAnimations();
     }, 100);
 
     return () => {
       // Clean up lenis instance
+      console.log("App unmounted, cleaning up");
       lenis.destroy();
     };
   }, []);

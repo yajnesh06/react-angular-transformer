@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -7,7 +6,7 @@ import Button from '@/components/Button';
 import { ArrowDown, Code, Repeat, TerminalSquare, MoveRight, Layers, Settings, GitBranch } from 'lucide-react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { scrollToElement } from '@/utils/smoothScroll';
+import { scrollToElement, initAnimations } from '@/utils/smoothScroll';
 
 // Register ScrollTrigger
 gsap.registerPlugin(ScrollTrigger);
@@ -19,75 +18,17 @@ const Index = () => {
   const aboutRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Ensure content is visible immediately
     setIsLoaded(true);
     
-    // Set up animations after the component has mounted
-    const timeline = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    // Initialize animations manually as a backup
+    console.log("Index component mounted, initializing animations");
+    const timer = setTimeout(() => {
+      initAnimations();
+    }, 500);
     
-    timeline
-      .fromTo('.hero-badge', 
-        { y: -20, opacity: 0 }, 
-        { y: 0, opacity: 1, duration: 0.8 }, 0)
-      .fromTo('.hero-title', 
-        { y: 30, opacity: 0 }, 
-        { y: 0, opacity: 1, duration: 0.8 }, 0.2)
-      .fromTo('.hero-description', 
-        { y: 30, opacity: 0 }, 
-        { y: 0, opacity: 1, duration: 0.8 }, 0.4)
-      .fromTo('.hero-buttons', 
-        { y: 30, opacity: 0 }, 
-        { y: 0, opacity: 1, duration: 0.8 }, 0.6)
-      .fromTo('.hero-arrow', 
-        { y: 30, opacity: 0 }, 
-        { y: 0, opacity: 1, duration: 0.8 }, 0.8);
-    
-    // Create scroll-triggered animations
-    if (featuresRef.current) {
-      gsap.fromTo('.feature-card',
-        { y: 60, opacity: 0 },
-        { 
-          y: 0, 
-          opacity: 1, 
-          stagger: 0.1, 
-          duration: 0.6,
-          scrollTrigger: {
-            trigger: featuresRef.current,
-            start: 'top 80%',
-          } 
-        }
-      );
-    }
-    
-    if (aboutRef.current) {
-      gsap.fromTo('.about-text',
-        { x: -50, opacity: 0 },
-        { 
-          x: 0, 
-          opacity: 1, 
-          duration: 0.8,
-          scrollTrigger: {
-            trigger: aboutRef.current,
-            start: 'top 70%',
-          } 
-        }
-      );
-      
-      gsap.fromTo('.about-image',
-        { x: 50, opacity: 0 },
-        { 
-          x: 0, 
-          opacity: 1, 
-          duration: 0.8,
-          scrollTrigger: {
-            trigger: aboutRef.current,
-            start: 'top 70%',
-          } 
-        }
-      );
-    }
-    
-    // Clean up animations on unmount
     return () => {
+      clearTimeout(timer);
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
     };
   }, []);
@@ -130,7 +71,7 @@ const Index = () => {
   ];
 
   return (
-    <div className={`min-h-screen flex flex-col ${isLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500`}>
+    <div className={`min-h-screen flex flex-col transition-opacity duration-500 opacity-100`}>
       <Header />
       
       {/* Hero section */}
@@ -210,6 +151,7 @@ const Index = () => {
               <div 
                 key={index} 
                 className="feature-card bg-white rounded-xl p-8 shadow-subtle hover:shadow-elevation transition-shadow"
+                style={{opacity: 1, transform: 'translateY(0)'}}
               >
                 <div className="mb-4 p-3 bg-blue-50 rounded-lg inline-block">
                   {feature.icon}
