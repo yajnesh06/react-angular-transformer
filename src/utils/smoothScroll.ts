@@ -13,8 +13,7 @@ export const initSmoothScroll = (): Lenis => {
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     orientation: 'vertical', // Use orientation instead of direction
     gestureOrientation: 'vertical', // Use gestureOrientation instead of gestureDirection
-    smooth: true,
-    smoothTouch: false,
+    smoothWheel: true, // Use smoothWheel instead of smooth
     touchMultiplier: 2,
   });
 
