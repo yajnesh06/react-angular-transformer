@@ -1,3 +1,6 @@
+Here is your updated `.gitignore` file with `.env` added to prevent committing sensitive data:  
+
+```
 # Logs
 logs
 *.log
@@ -7,10 +10,17 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependency directories
 node_modules
 dist
 dist-ssr
 *.local
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
 
 # Editor directories and files
 .vscode/*

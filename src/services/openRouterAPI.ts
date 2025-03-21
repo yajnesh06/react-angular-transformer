@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_KEY = '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';
+const API_KEY = import.meta.env.VITE_API_KEY;
 const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 /**
