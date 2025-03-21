@@ -11,9 +11,11 @@ A powerful web application that leverages AI to convert React components to Angu
 
 - **JSX to Angular Templates**: Convert JSX syntax to Angular templates with proper binding and directives
 - **State & Props Conversion**: Transform React state and props to Angular @Input(), and component properties
+- **Hooks Translation**: Convert React hooks to appropriate Angular lifecycle methods
 - **Intelligent Conversion**: AI-powered translation that understands the patterns of both frameworks
 - **Copy & Download**: Easily copy or download your converted Angular components
 - **Error Handling**: Clear error messages and suggestions if conversion fails
+- **Smooth Animations**: Enhanced user experience with GSAP animations and smooth scrolling
 
 ## How It Works
 
@@ -32,6 +34,8 @@ The conversion is powered by OpenRouter API using GPT-3.5-turbo model, which has
 - shadcn-ui
 - Tailwind CSS
 - OpenRouter API with GPT-3.5-turbo
+- GSAP for animations
+- Lenis for smooth scrolling
 
 ## Documentation
 
@@ -65,6 +69,17 @@ npm i
 # Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
 ```
+
+## Conversion Examples
+
+The converter handles various React patterns and features:
+
+- Functional components with hooks
+- Class components with lifecycle methods
+- State management and props
+- Event handlers and form inputs
+- JSX expressions and conditional rendering
+- Lists and array mapping
 
 ## How to edit this code?
 

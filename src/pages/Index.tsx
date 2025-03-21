@@ -1,17 +1,100 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ConversionPanel from '@/components/ConversionPanel';
 import Button from '@/components/Button';
 import { ArrowDown, Code, Repeat, TerminalSquare, MoveRight, Layers, Settings, GitBranch } from 'lucide-react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { scrollToElement } from '@/utils/smoothScroll';
+
+// Register ScrollTrigger
+gsap.registerPlugin(ScrollTrigger);
 
 const Index = () => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const featuresRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const aboutRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsLoaded(true);
+    
+    // Set up animations after the component has mounted
+    const timeline = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    
+    timeline
+      .fromTo('.hero-badge', 
+        { y: -20, opacity: 0 }, 
+        { y: 0, opacity: 1, duration: 0.8 }, 0)
+      .fromTo('.hero-title', 
+        { y: 30, opacity: 0 }, 
+        { y: 0, opacity: 1, duration: 0.8 }, 0.2)
+      .fromTo('.hero-description', 
+        { y: 30, opacity: 0 }, 
+        { y: 0, opacity: 1, duration: 0.8 }, 0.4)
+      .fromTo('.hero-buttons', 
+        { y: 30, opacity: 0 }, 
+        { y: 0, opacity: 1, duration: 0.8 }, 0.6)
+      .fromTo('.hero-arrow', 
+        { y: 30, opacity: 0 }, 
+        { y: 0, opacity: 1, duration: 0.8 }, 0.8);
+    
+    // Create scroll-triggered animations
+    if (featuresRef.current) {
+      gsap.fromTo('.feature-card',
+        { y: 60, opacity: 0 },
+        { 
+          y: 0, 
+          opacity: 1, 
+          stagger: 0.1, 
+          duration: 0.6,
+          scrollTrigger: {
+            trigger: featuresRef.current,
+            start: 'top 80%',
+          } 
+        }
+      );
+    }
+    
+    if (aboutRef.current) {
+      gsap.fromTo('.about-text',
+        { x: -50, opacity: 0 },
+        { 
+          x: 0, 
+          opacity: 1, 
+          duration: 0.8,
+          scrollTrigger: {
+            trigger: aboutRef.current,
+            start: 'top 70%',
+          } 
+        }
+      );
+      
+      gsap.fromTo('.about-image',
+        { x: 50, opacity: 0 },
+        { 
+          x: 0, 
+          opacity: 1, 
+          duration: 0.8,
+          scrollTrigger: {
+            trigger: aboutRef.current,
+            start: 'top 70%',
+          } 
+        }
+      );
+    }
+    
+    // Clean up animations on unmount
+    return () => {
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    };
   }, []);
+
+  const handleScrollToConverter = () => {
+    scrollToElement('converter');
+  };
 
   const features = [
     {
@@ -51,29 +134,36 @@ const Index = () => {
       <Header />
       
       {/* Hero section */}
-      <section className="pt-32 pb-16 md:pt-40 md:pb-20 px-6 md:px-10 bg-apple-gray/30">
+      <section ref={heroRef} className="pt-32 pb-16 md:pt-40 md:pb-20 px-6 md:px-10 bg-apple-gray/30">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-block px-3 py-1 rounded-full bg-apple-blue/10 text-apple-blue text-sm font-medium mb-6 animate-fade-in">
+            <div className="inline-block px-3 py-1 rounded-full bg-apple-blue/10 text-apple-blue text-sm font-medium mb-6 hero-badge">
               Transform with precision
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight mb-6 animate-slide-up">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight mb-6 hero-title">
               React to Angular Converter
             </h1>
-            <p className="text-lg md:text-xl text-gray-600 mb-8 animate-slide-up [animation-delay:100ms]">
+            <p className="text-lg md:text-xl text-gray-600 mb-8 hero-description">
               Convert your React components to Angular with precision and elegance. 
               A powerful tool for migrating codebases or learning framework differences.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-slide-up [animation-delay:200ms]">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 hero-buttons">
               <Button size="lg">
                 Get Started with CLI
               </Button>
-              <a href="#converter" className="text-gray-600 flex items-center hover:text-apple-blue transition-colors">
+              <a 
+                href="#converter" 
+                className="text-gray-600 flex items-center hover:text-apple-blue transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleScrollToConverter();
+                }}
+              >
                 Try Web Converter <MoveRight className="ml-1 h-4 w-4" />
               </a>
             </div>
             
-            <div className="relative animate-slide-up [animation-delay:300ms]">
+            <div className="relative hero-arrow">
               <div className="absolute inset-0 bg-gradient-to-t from-apple-gray/30 to-transparent -bottom-8 pointer-events-none" />
               <ArrowDown className="mx-auto h-6 w-6 text-gray-400 animate-bounce" />
             </div>
@@ -104,7 +194,7 @@ const Index = () => {
       </section>
       
       {/* Features section */}
-      <section id="features" className="py-16 md:py-24 px-6 md:px-10 bg-apple-gray/30">
+      <section id="features" ref={featuresRef} className="py-16 md:py-24 px-6 md:px-10 bg-apple-gray/30">
         <div className="max-w-7xl mx-auto">
           <div className="mb-12 md:mb-16 text-center">
             <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-4">
@@ -115,11 +205,11 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 features-grid">
             {features.map((feature, index) => (
               <div 
                 key={index} 
-                className="bg-white rounded-xl p-8 shadow-subtle hover:shadow-elevation transition-shadow"
+                className="feature-card bg-white rounded-xl p-8 shadow-subtle hover:shadow-elevation transition-shadow"
               >
                 <div className="mb-4 p-3 bg-blue-50 rounded-lg inline-block">
                   {feature.icon}
@@ -133,10 +223,10 @@ const Index = () => {
       </section>
       
       {/* About section */}
-      <section id="about" className="py-16 md:py-24 px-6 md:px-10">
+      <section id="about" ref={aboutRef} className="py-16 md:py-24 px-6 md:px-10">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row gap-12 items-center">
-            <div className="flex-1">
+            <div className="flex-1 about-text">
               <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-4">
                 Why convert from React to Angular?
               </h2>
@@ -157,7 +247,7 @@ const Index = () => {
                 Learn More About Migration
               </Button>
             </div>
-            <div className="flex-1 flex justify-center">
+            <div className="flex-1 flex justify-center about-image">
               <div className="relative w-full max-w-md aspect-square">
                 <div className="absolute top-0 right-0 w-4/5 h-4/5 bg-blue-100 rounded-xl animate-float" />
                 <div className="absolute bottom-0 left-0 w-4/5 h-4/5 bg-apple-blue rounded-xl z-10 overflow-hidden flex items-center justify-center text-white font-mono p-8 shadow-elevation">
@@ -193,6 +283,10 @@ const Index = () => {
             <a 
               href="#converter" 
               className="text-white flex items-center opacity-90 hover:opacity-100 transition-opacity"
+              onClick={(e) => {
+                e.preventDefault();
+                handleScrollToConverter();
+              }}
             >
               Continue with Web Converter <MoveRight className="ml-1 h-4 w-4" />
             </a>

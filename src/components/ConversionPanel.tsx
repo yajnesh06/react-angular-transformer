@@ -2,9 +2,11 @@
 import { useState, useEffect } from 'react';
 import CodeEditor from './CodeEditor';
 import Button from './Button';
-import { ArrowRight, Download, Copy, RefreshCw, Code, FileCode } from 'lucide-react';
-import { convertReactToAngularUsingAI } from '@/services/deepseekAPI';
+import { ArrowRight, Download, Copy, RefreshCw, Code, FileCode, CheckCircle, AlertCircle } from 'lucide-react';
+import { convertReactToAngularUsingAI } from '@/services/openRouterAPI';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+import { gsap } from 'gsap';
 
 const ConversionPanel = () => {
   const [reactCode, setReactCode] = useState('');
@@ -15,6 +17,15 @@ const ConversionPanel = () => {
   const [componentName, setComponentName] = useState('AppComponent');
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Apply animations when panel is mounted
+  useEffect(() => {
+    const animation = gsap.timeline();
+    animation.fromTo('.conversion-panel', 
+      { y: 20, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }
+    );
+  }, []);
 
   // Simple sample React component for first load
   useEffect(() => {
@@ -91,11 +102,23 @@ export default Counter;`;
       const result = await convertReactToAngularUsingAI(reactCode, extractedName);
       
       if (result) {
-        setAngularCode(result);
+        // Animate the appearance of the result
+        setAngularCode('');
+        setTimeout(() => {
+          setAngularCode(result);
+          
+          // Add animation for the success indicator
+          gsap.fromTo('.success-indicator',
+            { scale: 0, opacity: 0 },
+            { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out' }
+          );
+        }, 300);
+        
         setHasConverted(true);
         toast({
           title: "Conversion Complete",
           description: `Successfully converted "${extractedName}" to Angular.`,
+          icon: <CheckCircle className="h-4 w-4 text-green-500" />,
         });
       } else {
         throw new Error('Received empty response from conversion service');
@@ -109,7 +132,14 @@ export default Counter;`;
         title: "Conversion Error",
         description: errorMessage,
         variant: "destructive",
+        icon: <AlertCircle className="h-4 w-4" />,
       });
+      
+      // Animate error appearance
+      gsap.fromTo('.error-message',
+        { y: -10, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out' }
+      );
     } finally {
       clearInterval(statusInterval);
       setIsConverting(false);
@@ -122,7 +152,14 @@ export default Counter;`;
     toast({
       title: "Copied!",
       description: "Angular code copied to clipboard.",
+      icon: <CheckCircle className="h-4 w-4 text-green-500" />,
     });
+    
+    // Add a brief animation to the copy button
+    gsap.fromTo('.copy-button',
+      { scale: 0.95 },
+      { scale: 1, duration: 0.3, ease: 'elastic.out(1, 0.3)' }
+    );
   };
 
   const handleDownload = () => {
@@ -141,7 +178,14 @@ export default Counter;`;
     toast({
       title: "Downloaded!",
       description: `Angular component file '${fileName}' has been downloaded.`,
+      icon: <CheckCircle className="h-4 w-4 text-green-500" />,
     });
+    
+    // Add a brief animation to the download button
+    gsap.fromTo('.download-button',
+      { y: 0 },
+      { y: 3, yoyo: true, repeat: 1, duration: 0.2, ease: 'power1.inOut' }
+    );
   };
 
   const handleClearCode = () => {
@@ -150,19 +194,29 @@ export default Counter;`;
     setHasConverted(false);
     setComponentName('AppComponent');
     setError(null);
+    
+    // Add animation for clearing
+    gsap.fromTo(['.react-editor', '.angular-editor'],
+      { opacity: 1 },
+      { opacity: 0, duration: 0.2, stagger: 0.1, ease: 'power1.inOut', onComplete: () => {
+        gsap.to(['.react-editor', '.angular-editor'], { opacity: 1, duration: 0.3 });
+      }}
+    );
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full conversion-panel">
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600">
-          <p className="font-medium">Error:</p>
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 error-message">
+          <p className="font-medium flex items-center">
+            <AlertCircle size={16} className="mr-1" /> Error:
+          </p>
           <p>{error}</p>
         </div>
       )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="animate-slide-in-left [animation-delay:200ms]">
+        <div className="react-editor">
           <div className="mb-2 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-gray-700 flex items-center">
               <Code size={16} className="mr-1" /> React Component
@@ -179,7 +233,7 @@ export default Counter;`;
           />
         </div>
 
-        <div className="flex flex-col animate-slide-in-right [animation-delay:300ms]">
+        <div className="flex flex-col angular-editor">
           <div className="mb-2 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-gray-700 flex items-center">
               <FileCode size={16} className="mr-1" /> Angular Component
@@ -192,7 +246,7 @@ export default Counter;`;
             readOnly
             placeholder={isConverting ? "Converting..." : "Angular component will appear here..."}
             label="Angular Component"
-            className="h-full"
+            className={cn("h-full", hasConverted && "success-indicator")}
           />
           
           {isConverting && (
@@ -204,7 +258,7 @@ export default Counter;`;
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row justify-between items-center mt-8 pt-4 border-t border-gray-100 animate-slide-up [animation-delay:400ms]">
+      <div className="flex flex-col sm:flex-row justify-between items-center mt-8 pt-4 border-t border-gray-100">
         <div className="flex flex-wrap gap-3 mb-4 sm:mb-0">
           <Button
             variant="outline"
@@ -221,7 +275,7 @@ export default Counter;`;
                 variant="outline"
                 size="sm"
                 onClick={handleCopyToClipboard}
-                className="flex items-center"
+                className="flex items-center copy-button"
               >
                 <Copy size={16} className="mr-2" />
                 Copy
@@ -230,7 +284,7 @@ export default Counter;`;
                 variant="outline"
                 size="sm"
                 onClick={handleDownload}
-                className="flex items-center"
+                className="flex items-center download-button"
               >
                 <Download size={16} className="mr-2" />
                 Download
