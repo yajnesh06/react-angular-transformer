@@ -17,7 +17,6 @@ const ConversionPanel = () => {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Apply animations when panel is mounted
   useEffect(() => {
     const animation = gsap.timeline();
     animation.fromTo('.conversion-panel', 
@@ -26,19 +25,47 @@ const ConversionPanel = () => {
     );
   }, []);
 
-  // Simple sample React component for first load
   useEffect(() => {
     const sampleReact = `
-import { useState } from 'react';
+import { useState, useEffect, useContext, createContext } from 'react';
+
+// Simple context for theme
+const ThemeContext = createContext('light');
 
 function Counter() {
   const [count, setCount] = useState(0);
+  const [isEven, setIsEven] = useState(true);
+  const theme = useContext(ThemeContext);
+  
+  useEffect(() => {
+    console.log('Component mounted');
+    document.title = \`Counter: \${count}\`;
+    
+    return () => {
+      console.log('Component unmounted');
+      document.title = 'React App';
+    };
+  }, []);
+  
+  useEffect(() => {
+    console.log('Count changed to:', count);
+    setIsEven(count % 2 === 0);
+  }, [count]);
+  
+  const handleIncrement = () => {
+    setCount(count + 1);
+  };
+  
+  const handleReset = () => {
+    setCount(0);
+  };
 
   return (
-    <div className="counter">
+    <div className="counter" style={{ background: theme === 'dark' ? '#333' : '#fff' }}>
       <h2>Count: {count}</h2>
-      <button onClick={() => setCount(count + 1)}>Increment</button>
-      <button onClick={() => setCount(count - 1)}>Decrement</button>
+      <div>{isEven ? 'Even' : 'Odd'}</div>
+      <button onClick={handleIncrement}>Increment</button>
+      <button onClick={handleReset}>Reset</button>
     </div>
   );
 }
@@ -49,7 +76,6 @@ export default Counter;`;
   }, []);
 
   const detectComponentName = (code: string): string => {
-    // Auto-detect component name from code
     const nameMatch = code.match(/function\s+([A-Z][a-zA-Z0-9_]*)/);
     const classMatch = code.match(/class\s+([A-Z][a-zA-Z0-9_]*)/);
     const constMatch = code.match(/const\s+([A-Z][a-zA-Z0-9_]*)\s*=/);
@@ -70,9 +96,8 @@ export default Counter;`;
 
     setIsConverting(true);
     setError(null);
-    setAngularCode(''); // Clear previous conversion
-    
-    // Set a series of status messages to make the process feel more responsive
+    setAngularCode('');
+
     const statusMessages = [
       "Analyzing React component structure...",
       "Identifying component lifecycle hooks...",
@@ -81,7 +106,6 @@ export default Counter;`;
       "Finalizing Angular component..."
     ];
     
-    // Display changing status messages while converting
     let messageIndex = 0;
     const statusInterval = setInterval(() => {
       if (messageIndex < statusMessages.length) {
@@ -91,22 +115,18 @@ export default Counter;`;
     }, 1000);
     
     try {
-      // Detect component name from code
       const extractedName = detectComponentName(reactCode);
       if (extractedName !== componentName) {
         setComponentName(extractedName);
       }
       
-      // Convert code with optimized service
       const result = await convertReactToAngularUsingAI(reactCode, extractedName);
       
       if (result) {
-        // Animate the appearance of the result
         setAngularCode('');
         setTimeout(() => {
           setAngularCode(result);
           
-          // Add animation for the success indicator
           gsap.fromTo('.success-indicator',
             { scale: 0, opacity: 0 },
             { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out' }
@@ -132,7 +152,6 @@ export default Counter;`;
         variant: "destructive",
       });
       
-      // Animate error appearance
       gsap.fromTo('.error-message',
         { y: -10, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out' }
@@ -151,7 +170,6 @@ export default Counter;`;
       description: "Angular code copied to clipboard.",
     });
     
-    // Add a brief animation to the copy button
     gsap.fromTo('.copy-button',
       { scale: 0.95 },
       { scale: 1, duration: 0.3, ease: 'elastic.out(1, 0.3)' }
@@ -163,7 +181,6 @@ export default Counter;`;
     const file = new Blob([angularCode], { type: 'text/plain' });
     element.href = URL.createObjectURL(file);
     
-    // Use component name for the file name
     const fileName = `${componentName.toLowerCase()}.component.ts`;
     element.download = fileName;
     
@@ -176,7 +193,6 @@ export default Counter;`;
       description: `Angular component file '${fileName}' has been downloaded.`,
     });
     
-    // Add a brief animation to the download button
     gsap.fromTo('.download-button',
       { y: 0 },
       { y: 3, yoyo: true, repeat: 1, duration: 0.2, ease: 'power1.inOut' }
@@ -190,7 +206,6 @@ export default Counter;`;
     setComponentName('AppComponent');
     setError(null);
     
-    // Add animation for clearing
     gsap.fromTo(['.react-editor', '.angular-editor'],
       { opacity: 1 },
       { opacity: 0, duration: 0.2, stagger: 0.1, ease: 'power1.inOut', onComplete: () => {
@@ -201,6 +216,24 @@ export default Counter;`;
 
   return (
     <div className="w-full conversion-panel">
+      <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+        <h3 className="text-sm font-semibold text-blue-700 mb-2">Advanced State Management Conversion</h3>
+        <ul className="text-xs text-blue-600 space-y-1">
+          <li className="flex items-center">
+            <CheckCircle size={12} className="mr-1 flex-shrink-0" /> 
+            Converts React state (useState, useReducer, Redux) to Angular services (RxJS, NGXS, NGRX)
+          </li>
+          <li className="flex items-center">
+            <CheckCircle size={12} className="mr-1 flex-shrink-0" /> 
+            Supports Context API conversion to dependency injection in Angular
+          </li>
+          <li className="flex items-center">
+            <CheckCircle size={12} className="mr-1 flex-shrink-0" /> 
+            Converts React effects (useEffect) to Angular lifecycle hooks
+          </li>
+        </ul>
+      </div>
+      
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 error-message">
           <p className="font-medium flex items-center">
