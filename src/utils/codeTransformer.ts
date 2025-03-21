@@ -1,13 +1,6 @@
+
 // This is a more comprehensive code transformation from React to Angular
 // In a real implementation, we'd use Babel and TypeScript Compiler API for robust parsing
-
-import { 
-  convertUseStateToAngular, 
-  convertUseReducerToAngular, 
-  convertContextApiToDI, 
-  convertUseEffectToLifecycle,
-  convertReduxToNgrx
-} from './advancedStateConverter';
 
 /**
  * Transform React JSX code to Angular Template
@@ -108,29 +101,18 @@ export const transformReactToAngularComponent = (
     // For class components we would need a different approach
     const isClassComponent = reactCode.includes('extends React.Component') || reactCode.includes('extends Component');
     
-    // First apply advanced state management conversions
-    let processedCode = reactCode;
-    
-    // Apply state management conversions
-    processedCode = convertUseStateToAngular(processedCode);
-    processedCode = convertUseReducerToAngular(processedCode);
-    processedCode = convertContextApiToDI(processedCode);
-    processedCode = convertUseEffectToLifecycle(processedCode);
-    processedCode = convertReduxToNgrx(processedCode);
-    
-    // Extract hooks and state from the processed code
-    const stateMatches = [...processedCode.matchAll(/const\s+\[([^,]+),\s*set([^\]]+)\]\s*=\s*useState\(([^)]*)\)/g)];
-    const effectMatches = [...processedCode.matchAll(/useEffect\(\(\)\s*=>\s*{([\s\S]*?)}\s*,\s*\[(.*?)]\)/g)];
+    // Extract hooks and state
+    const stateMatches = [...reactCode.matchAll(/const\s+\[([^,]+),\s*set([^\]]+)\]\s*=\s*useState\(([^)]*)\)/g)];
+    const effectMatches = [...reactCode.matchAll(/useEffect\(\(\)\s*=>\s*{([\s\S]*?)}\s*,\s*\[(.*?)]\)/g)];
     
     // Extract functions and handlers
-    const functionMatches = [...processedCode.matchAll(/const\s+([a-zA-Z0-9_]+)\s*=\s*\(([^)]*)\)\s*=>\s*{([\s\S]*?)}/g)];
+    const functionMatches = [...reactCode.matchAll(/const\s+([a-zA-Z0-9_]+)\s*=\s*\(([^)]*)\)\s*=>\s*{([\s\S]*?)}/g)];
     
     // Convert JSX to Angular Template
     const template = transformJSXToAngular(jsxCode);
     
-    // Generate Angular Component with state management
-    let angularComponent = `import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+    // Generate Angular Component
+    let angularComponent = `import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 
 @Component({
   selector: 'app-${componentName.toLowerCase()}',
@@ -143,10 +125,6 @@ export class ${componentName} implements OnInit`;
     
     if (effectMatches.some(match => match[0].includes('return () =>'))) {
       angularComponent += ', OnDestroy';
-    }
-    
-    if (processedCode.includes('ngOnChanges')) {
-      angularComponent += ', OnChanges';
     }
     
     angularComponent += ` {
@@ -165,39 +143,36 @@ export class ${componentName} implements OnInit`;
   
 `;
     
-    // Add lifecycle methods from processed code
-    if (processedCode.includes('ngOnInit')) {
-      const ngOnInitMatch = processedCode.match(/ngOnInit\(\):\s*void\s*{([\s\S]*?)}/);
-      if (ngOnInitMatch) {
+    // Add lifecycle methods
+    let hasNgOnInit = false;
+    let hasNgOnDestroy = false;
+    
+    effectMatches.forEach(match => {
+      const effectBody = match[1];
+      const dependencies = match[2].trim();
+      
+      if (!dependencies || dependencies === '') {
+        hasNgOnInit = true;
         angularComponent += `  ngOnInit(): void {
-    ${ngOnInitMatch[1].trim()}
+    ${effectBody.trim()}
   }
   
 `;
-      }
-    }
-    
-    if (processedCode.includes('ngOnDestroy')) {
-      const ngOnDestroyMatch = processedCode.match(/ngOnDestroy\(\):\s*void\s*{([\s\S]*?)}/);
-      if (ngOnDestroyMatch) {
-        angularComponent += `  ngOnDestroy(): void {
-    ${ngOnDestroyMatch[1].trim()}
+        
+        // Check for cleanup function
+        if (effectBody.includes('return () =>')) {
+          hasNgOnDestroy = true;
+          const cleanupMatch = effectBody.match(/return\s*\(\)\s*=>\s*{([\s\S]*?)}/);
+          if (cleanupMatch) {
+            angularComponent += `  ngOnDestroy(): void {
+    ${cleanupMatch[1].trim()}
   }
   
 `;
+          }
+        }
       }
-    }
-    
-    if (processedCode.includes('ngOnChanges')) {
-      const ngOnChangesMatch = processedCode.match(/ngOnChanges\(changes:\s*SimpleChanges\):\s*void\s*{([\s\S]*?)}/);
-      if (ngOnChangesMatch) {
-        angularComponent += `  ngOnChanges(changes: SimpleChanges): void {
-    ${ngOnChangesMatch[1].trim()}
-  }
-  
-`;
-      }
-    }
+    });
     
     // Add methods
     functionMatches.forEach(match => {
