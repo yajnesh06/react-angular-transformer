@@ -1,0 +1,17 @@
+﻿name: Keep Vercel Deployment Alive
+
+on:
+  schedule:
+    - cron: '0 */5 * * *'  # Run every 5 hours
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  ping-vercel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Vercel Deployment
+        run: |
+          curl -X GET "https://reacttoangular.vercel.app" -H "User-Agent: GitHub-Actions-Keep-Alive" || echo "Vercel ping failed, but continuing workflow"
+      
+      - name: Log timestamp
+        run: echo "Vercel ping completed at $(date)"
