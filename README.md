@@ -3,9 +3,7 @@
 
 A powerful web application that leverages AI to convert React components to Angular components with precision and elegance.
 
-## Project info
 
-**URL**: https://lovable.dev/projects/ebf4bf7a-27d4-429f-84aa-2f7a1760414c
 
 ## Features
 
@@ -183,12 +181,7 @@ The converter handles several complex React patterns and translates them to Angu
 
 #### Use the web interface
 
-The simplest way to use the converter is through our web interface:
 
-1. Visit the application at [React to Angular Converter](https://lovable.dev/projects/ebf4bf7a-27d4-429f-84aa-2f7a1760414c)
-2. Paste your React component code
-3. Click "Convert to Angular"
-4. Copy or download the resulting Angular component
 
 #### Run locally
 
@@ -223,37 +216,11 @@ The converter handles various React patterns and features:
 
 There are several ways of editing this application:
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/ebf4bf7a-27d4-429f-84aa-2f7a1760414c) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
 
 **Use your preferred IDE**
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+If you want to work locally using your own IDE, you can clone this repo and push changes. 
 
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/ebf4bf7a-27d4-429f-84aa-2f7a1760414c) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
 
 ## License
 
